@@ -1,26 +1,25 @@
 package jsug.portside.attendee;
 
-import java.util.*;
-
-import javax.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
+
+import jsug.portside.JsugProps;
 
 @Repository
 public class AttendeeRepository {
-	private Map<String, Attendee> attendees;
+	private final RestTemplate restTemplate;
+	private final JsugProps props;
 
-	public List<Attendee> findAll() {
-		return new ArrayList<>(attendees.values());
+	public AttendeeRepository(RestTemplate restTemplate, JsugProps props) {
+		this.restTemplate = restTemplate;
+		this.props = props;
 	}
 
-	@PostConstruct
-	public void init() {
-		LinkedHashMap<String, Attendee> linkedHashMap = new LinkedHashMap<>();
-		for (int i = 0; i < 20; i++) {
-			String key = String.format("id%02d", i);
-			linkedHashMap.put(key, new Attendee(key, "attendee" + i + "@example.com"));
-		}
-		this.attendees = Collections.unmodifiableMap(linkedHashMap);
+	public List<Attendee> findAll() {
+		return Arrays.asList(restTemplate.getForObject("{apiUrl}/attendees",
+				Attendee[].class, props.getApiUrl()));
 	}
 }

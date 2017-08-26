@@ -1,10 +1,14 @@
 package jsug.portside.attendee;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Attendee {
 	private final String id;
 	private final String email;
 
-	public Attendee(String id, String email) {
+	@JsonCreator
+	public Attendee(@JsonProperty("id") String id, @JsonProperty("email") String email) {
 		this.id = id;
 		this.email = email;
 	}
