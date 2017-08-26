@@ -1,19 +1,51 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Portside Admin</title>
 </head>
 <body>
-<h1><a th:href="@{/}">Portside Admin</a></h1>
-<h2>参加者一覧</h2>
-<table>
-    <tr>
-        <th>Email</th>
-    </tr>
-    <tr th:each="attendee : ${attendees}">
-        <td th:text="${attendee.email}"></td>
-    </tr>
-</table>
+
+<section layout:fragment="content">
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            参加者
+        </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">参加者一覧</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>Email</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="attendee : ${attendees}">
+                                <td th:text="${attendee.email}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- /.col -->
+        </div>
+    </section>
+    <!-- /.content -->
+</section>
 </body>
 </html>

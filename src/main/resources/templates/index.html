@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Portside Admin</title>
 </head>
 <body>
-<h1><a th:href="@{/}">Portside Admin</a></h1>
-Hello <span id="login-username" sec:authentication="principal">username</span>
 
-<ul>
-    <li><a th:href="@{/sessions}">セッション一覧</a></li>
-    <li><a th:href="@{/attendees}">参加者一覧</a></li>
-</ul>
+<section layout:fragment="content">
 
-<a th:href="${@jsugProps.getUiUrl()}">Portsideへ</a>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            Dashboard
+        </h1>
+    </section>
 
+    <!-- Main content -->
+    <section class="content">
+        <a th:href="${@jsugProps.getUiUrl()}">Portsideへ</a>
+    </section>
+    <!-- /.content -->
+</section>
 </body>
 </html>
