@@ -2,6 +2,7 @@ package jsug.portside.audit;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class AuditController {
 		Instant threeDaysAgo = Instant.now().minus(3, ChronoUnit.DAYS);
 		List<AuditEvent> auditEvents = this.auditEventRepository
 				.find(Date.from(threeDaysAgo));
+		Collections.reverse(auditEvents);
 		model.addAttribute("auditEvents", auditEvents);
 		return "audit/index";
 	}
