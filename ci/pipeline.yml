@@ -1,0 +1,52 @@
+---
+resource_types:
+resources:
+  - name: repo-master
+    type: git
+    source:
+      uri: https://github.com/jsug-projects/portside-admin.git
+      branch: master
+  - name: cf
+    type: cf
+    source:
+      api: api.run.pez.pivotal.io
+      username: {{cf-username}}
+      password: {{cf-password}}
+      organization: pivot-tmaki
+      space: jsug
+      skip_cert_check: true
+jobs:
+  - name: deploy-to-cf
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-master
+          trigger: true
+      - task: package
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: maven
+          inputs:
+          - name: repo
+          outputs:
+          - name: output
+          caches:
+          - path: repo/cache
+          run:
+            path: bash
+            dir: repo
+            args:
+            - -c
+            - |
+              rm -rf ~/.m2
+              ln -fs $(pwd)/cache ~/.m2
+              mvn package -DskipTests=true
+              cp target/*.jar ../output/app.jar
+      - put: cf
+        params:
+          manifest: repo/manifest.yml
+          path: output/app.jar
+          current_app_name: portside-admin
