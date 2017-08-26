@@ -1,5 +1,10 @@
 ---
 resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: v1.3.0
 resources:
   - name: repo-master
     type: git
@@ -15,8 +20,13 @@ resources:
       organization: pivot-tmaki
       space: jsug
       skip_cert_check: true
+  - name: slack-alert
+    type: slack-notification
+    source:
+      url: {{slack-webhook-url}}
 jobs:
   - name: deploy-to-cf
+    serial: true
     plan:
       - aggregate:
         - get: repo
@@ -43,10 +53,29 @@ jobs:
             - |
               rm -rf ~/.m2
               ln -fs $(pwd)/cache ~/.m2
-              mvn package -DskipTests=true
+              mvn package
               cp target/*.jar ../output/app.jar
+        on_success:
+          <<: *SLACK_SUCCESS
+        on_failure:
+          <<: *SLACK_FAILURE
       - put: cf
         params:
           manifest: repo/manifest.yml
           path: output/app.jar
           current_app_name: portside-admin
+        on_failure:
+          <<: *SLACK_FAILURE
+params:
+  slack_success: &SLACK_SUCCESS
+    put: slack-alert
+    params:
+      channel: '#concourse'
+      text: |
+        <!here> :white_check_mark: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* succeeded with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
+  slack_failure:  &SLACK_FAILURE
+    put: slack-alert
+    params:
+      channel: '#concourse'
+      text: |
+        <!here> :rotating_light: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* failed with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
