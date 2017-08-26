@@ -19,7 +19,7 @@ public class SessionRepository {
 	}
 
 	public List<Session> findAll() {
-		return Arrays.asList(restTemplate.getForObject("{apiUrl}/admin/sessions",
+		return Arrays.asList(restTemplate.getForObject("{apiUrl}/sessions",
 				Session[].class, props.getApiUrl()));
 	}
 }
