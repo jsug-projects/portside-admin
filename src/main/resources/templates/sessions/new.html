@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            セッション
+        </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <!-- general form elements -->
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">セッション登録</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form" method="post" th:action="@{/sessions}" th:object="${sessionForm}">
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="title">タイトル</label>
+                                <input type="text" class="form-control" id="title" th:field="*{title}">
+                            </div>
+                            <div class="form-group">
+                                <label for="description">概要</label>
+                                <textarea id="description" class="form-control" rows="5"th:field="*{description}"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="speaker">スピーカー</label>
+                                <input type="text" class="form-control" id="speaker" th:field="*{speaker}">
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+
+                        <div class="box-footer">
+                            <button type="submit" name="new" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- /.col -->
+        </div>
+    </section>
+    <!-- /.content -->
+</section>
+</body>
+</html>
+

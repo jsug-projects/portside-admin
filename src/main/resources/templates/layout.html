@@ -100,7 +100,7 @@ desired effect
     <aside class="main-sidebar">
 
         <!-- sidebar: style can be found in sidebar.less -->
-        <section class="sidebar">
+        <section class="sidebar" th:with="path=${#request.getRequestURI().substring(1)}">
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
                 <!-- Sidebar user panel -->
@@ -115,7 +115,7 @@ desired effect
                 </div>
                 <li class="header">HEADER</li>
                 <!-- Optionally, you can add icons to the links -->
-                <li class="treeview">
+                <li class="treeview" th:classappend="${path == 'sessions' ? 'active' : ''}">
                     <a href="#"><i class="fa fa-link"></i> <span>セッション</span>
                         <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
@@ -123,10 +123,10 @@ desired effect
                     </a>
                     <ul class="treeview-menu">
                         <li><a th:href="@{/sessions}">一覧</a></li>
-                        <li><a href="#">登録</a></li>
+                        <li><a th:href="@{/sessions(new)}">登録</a></li>
                     </ul>
                 </li>
-                <li class="treeview">
+                <li class="treeview" th:classappend="${path == 'attendees' ? 'active' : ''}">
                     <a href="#"><i class="fa fa-link"></i> <span>参加者</span>
                         <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
