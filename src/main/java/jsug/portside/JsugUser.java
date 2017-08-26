@@ -31,13 +31,8 @@ public class JsugUser implements Serializable {
 		return avatarUrl;
 	}
 
-    @Override
-    public String toString() {
-        return "JsugUser{" +
-                "name='" + name + '\'' +
-                ", github='" + github + '\'' +
-                ", email='" + email + '\'' +
-                ", avatarUrl='" + avatarUrl + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return name;
+	}
 }

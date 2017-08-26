@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -79,7 +78,8 @@ desired effect
                         <!-- Menu Toggle Button -->
                         <a th:if="${#authentication != null}" href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <!-- The user image in the navbar-->
-                            <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}" class="user-image" alt="User Image">
+                            <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}"
+                                 class="user-image" alt="User Image">
                             <!-- hidden-xs hides the username on small devices so only the image appears. -->
                             <span class="hidden-xs" sec:authentication="principal.name">Alexander Pierce</span>
                         </a>
@@ -106,7 +106,8 @@ desired effect
                 <!-- Sidebar user panel -->
                 <div th:if="${#authentication != null}" class="user-panel">
                     <div class="pull-left image">
-                        <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}" class="img-circle" alt="User Image">
+                        <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}"
+                             class="img-circle" alt="User Image">
                     </div>
                     <div class="pull-left info">
                         <p sec:authentication="principal.name">Alexander Pierce</p>
@@ -116,26 +117,36 @@ desired effect
                 <li class="header">HEADER</li>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="treeview" th:classappend="${path == 'sessions' ? 'active' : ''}">
-                    <a href="#"><i class="fa fa-link"></i> <span>セッション</span>
+                    <a href="#"><i class="fa fa-newspaper-o"></i> <span>セッション</span>
                         <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a th:href="@{/sessions}">一覧</a></li>
-                        <li><a th:href="@{/sessions(new)}">登録</a></li>
+                        <li><a th:href="@{/sessions}"><i class="fa fa-circle-o"></i> 一覧</a></li>
+                        <li><a th:href="@{/sessions(new)}"><i class="fa fa-circle-o"></i> 登録</a></li>
                     </ul>
                 </li>
                 <li class="treeview" th:classappend="${path == 'attendees' ? 'active' : ''}">
-                    <a href="#"><i class="fa fa-link"></i> <span>参加者</span>
+                    <a href="#"><i class="fa fa-user"></i> <span>参加者</span>
                         <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a th:href="@{/attendees}">一覧</a></li>
+                        <li><a th:href="@{/attendees}"><i class="fa fa-circle-o"></i> 一覧</a></li>
                     </ul>
                 </li>
+            <li class="treeview" th:classappend="${path == 'audit' ? 'active' : ''}">
+                <a href="#"><i class="fa fa-eye"></i> <span>監査</span>
+                    <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+                </a>
+                <ul class="treeview-menu">
+                    <li><a th:href="@{/audit}"><i class="fa fa-circle-o"></i> ログイン履歴</a></li>
+                </ul>
+            </li>
             </ul>
             <!-- /.sidebar-menu -->
         </section>
