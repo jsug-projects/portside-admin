@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Portside Admin</title>
+</head>
+<body>
+<h1>Portside Admin</h1>
+Hello <span id="login-username" sec:authentication="principal">username</span>
+</body>
+</html>
