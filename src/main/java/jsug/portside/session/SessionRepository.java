@@ -23,6 +23,12 @@ public class SessionRepository {
 				Session[].class, props.getApiUrl()));
 	}
 
+	public List<SessionWithCount> findAllWithCount() {
+		return Arrays
+				.asList(restTemplate.getForObject("{apiUrl}/sessionsWithAttendeeCount",
+						SessionWithCount[].class, props.getApiUrl()));
+	}
+
 	public Session save(Session session) {
 		restTemplate.postForObject("{apiUrl}/sessions", session, Void.class,
 				props.getApiUrl());

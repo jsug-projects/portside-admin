@@ -125,6 +125,7 @@ desired effect
                     <ul class="treeview-menu">
                         <li><a th:href="@{/sessions}"><i class="fa fa-circle-o"></i> 一覧</a></li>
                         <li><a th:href="@{/sessions(new)}"><i class="fa fa-circle-o"></i> 登録</a></li>
+                        <li><a th:href="@{/sessions(count)}"><i class="fa fa-circle-o"></i> 聴講希望者数</a></li>
                     </ul>
                 </li>
                 <li class="treeview" th:classappend="${path == 'attendees' ? 'active' : ''}">

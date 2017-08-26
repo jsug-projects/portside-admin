@@ -30,6 +30,13 @@ public class SessionController {
 		return "sessions/index";
 	}
 
+	@GetMapping(params = "count")
+	public String count(Model model) {
+		List<SessionWithCount> sessions = this.sessionRepository.findAllWithCount();
+		model.addAttribute("sessions", sessions);
+		return "sessions/count";
+	}
+
 	@GetMapping(params = "new")
 	public String newForm(Model model) {
 		return "sessions/new";
