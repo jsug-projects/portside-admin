@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Portside Admin</title>
+</head>
+<body>
+<h1><a th:href="@{/}">Portside Admin</a></h1>
+<h2>参加者一覧</h2>
+<table>
+    <tr>
+        <th>Email</th>
+    </tr>
+    <tr th:each="attendee : ${attendees}">
+        <td th:text="${attendee.email}"></td>
+    </tr>
+</table>
+</body>
+</html>

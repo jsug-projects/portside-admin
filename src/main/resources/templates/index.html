@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <title>Portside Admin</title>
 </head>
 <body>
-<h1>Portside Admin</h1>
+<h1><a th:href="@{/}">Portside Admin</a></h1>
 Hello <span id="login-username" sec:authentication="principal">username</span>
+
+<ul>
+    <li><a th:href="@{/sessions}">セッション一覧</a></li>
+    <li><a th:href="@{/attendees}">参加者一覧</a></li>
+</ul>
 </body>
 </html>

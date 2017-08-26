@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Portside Admin</title>
+</head>
+<body>
+<h1><a th:href="@{/}">Portside Admin</a></h1>
+<h2>セッション一覧</h2>
+<table>
+    <tr>
+        <th>タイトル</th>
+        <th>スピーカー</th>
+        <th>概要</th>
+    </tr>
+    <tr th:each="session : ${sessions}">
+        <td th:text="${session.title}"></td>
+        <td th:text="${session.speaker}"></td>
+        <td th:text="${session.description}"></td>
+    </tr>
+</table>
+</body>
+</html>
