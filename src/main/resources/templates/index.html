@@ -13,5 +13,8 @@ Hello <span id="login-username" sec:authentication="principal">username</span>
     <li><a th:href="@{/sessions}">セッション一覧</a></li>
     <li><a th:href="@{/attendees}">参加者一覧</a></li>
 </ul>
+
+<a th:href="${@jsugProps.getUiUrl()}">Portsideへ</a>
+
 </body>
 </html>
