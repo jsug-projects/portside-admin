@@ -55,8 +55,6 @@ jobs:
               ln -fs $(pwd)/cache ~/.m2
               mvn package
               cp target/*.jar ../output/app.jar
-        on_success:
-          <<: *SLACK_SUCCESS
         on_failure:
           <<: *SLACK_FAILURE
       - put: cf
@@ -64,6 +62,8 @@ jobs:
           manifest: repo/manifest.yml
           path: output/app.jar
           current_app_name: portside-admin
+        on_success:
+          <<: *SLACK_SUCCESS
         on_failure:
           <<: *SLACK_FAILURE
 params:
