@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JsugProps {
 	private Set<String> adminUsers;
+	private String apiUrl;
 
 	public Set<String> getAdminUsers() {
 		return adminUsers;
@@ -16,5 +17,13 @@ public class JsugProps {
 
 	public void setAdminUsers(Set<String> adminUsers) {
 		this.adminUsers = adminUsers;
+	}
+
+	public String getApiUrl() {
+		return apiUrl;
+	}
+
+	public void setApiUrl(String apiUrl) {
+		this.apiUrl = apiUrl;
 	}
 }

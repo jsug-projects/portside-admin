@@ -1,27 +1,25 @@
 package jsug.portside.session;
 
-import java.util.*;
-
-import javax.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
+
+import jsug.portside.JsugProps;
 
 @Repository
 public class SessionRepository {
-	private Map<String, Session> sessions;
+	private final RestTemplate restTemplate;
+	private final JsugProps props;
 
-	public List<Session> findAll() {
-		return new ArrayList<>(sessions.values());
+	public SessionRepository(RestTemplate restTemplate, JsugProps props) {
+		this.restTemplate = restTemplate;
+		this.props = props;
 	}
 
-	@PostConstruct
-	public void init() {
-		LinkedHashMap<String, Session> linkedHashMap = new LinkedHashMap<>();
-		for (int i = 0; i < 20; i++) {
-			String key = String.format("id%02d", i);
-			Session session = new Session(key, "title" + i, "desc" + i, "speaker" + 1);
-			linkedHashMap.put(key, session);
-		}
-		this.sessions = Collections.unmodifiableMap(linkedHashMap);
+	public List<Session> findAll() {
+		return Arrays.asList(restTemplate.getForObject("{apiUrl}/admin/sessions",
+				Session[].class, props.getApiUrl()));
 	}
 }
