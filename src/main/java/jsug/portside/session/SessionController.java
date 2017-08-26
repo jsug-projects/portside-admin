@@ -4,10 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("sessions")
@@ -45,6 +42,20 @@ public class SessionController {
 	@PostMapping(params = "new")
 	public String newSubmit(SessionForm sessionForm) {
 		Session session = sessionForm.toSession();
+		this.sessionRepository.save(session);
+		return "redirect:/sessions";
+	}
+
+	@GetMapping(params = { "update", "id" })
+	public String updateForm(SessionForm sessionForm, Model model,
+			@RequestParam String id) {
+		model.addAttribute("id", id);
+		return "sessions/update";
+	}
+
+	@PostMapping(params = { "update", "id" })
+	public String update(SessionForm sessionForm, @RequestParam String id) {
+		Session session = sessionForm.toSession(id);
 		this.sessionRepository.save(session);
 		return "redirect:/sessions";
 	}

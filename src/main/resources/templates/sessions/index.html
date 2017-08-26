@@ -31,6 +31,7 @@
                                 <th>タイトル</th>
                                 <th>スピーカー</th>
                                 <th>概要</th>
+                                <th>編集</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -38,6 +39,15 @@
                                 <td th:text="${s.title}"></td>
                                 <td th:text="${s.speaker}"></td>
                                 <td th:text="${s.description}"></td>
+                                <td>
+                                    <form method="get" th:action="@{/sessions}">
+                                        <input type="submit" value="変更" name="update" class="btn btn-primary">
+                                        <input type="hidden" name="id" th:value="${s.id}">
+                                        <input type="hidden" name="title" th:value="${s.title}">
+                                        <input type="hidden" name="speaker" th:value="${s.speaker}">
+                                        <input type="hidden" name="description" th:value="${s.description}">
+                                    </form>
+                                </td>
                             </tr>
                             </tbody>
                         </table>

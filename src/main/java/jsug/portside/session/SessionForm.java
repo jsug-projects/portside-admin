@@ -36,14 +36,22 @@ public class SessionForm {
 	}
 
 	public Session toSession() {
-		return new Session(null, this.title, this.description, this.speaker);
+		return this.toSession(null);
+	}
+
+	public Session toSession(String id) {
+		return new Session(id, this.title, this.description, this.speaker);
+	}
+
+	public SessionForm apply(Session session) {
+		this.setTitle(session.getTitle());
+		this.setDescription(session.getDescription());
+		this.setSpeaker(session.getSpeaker());
+		return this;
 	}
 
 	public static SessionForm fromSession(Session session) {
 		SessionForm sessionForm = new SessionForm();
-		sessionForm.setTitle(session.getTitle());
-		sessionForm.setDescription(session.getDescription());
-		sessionForm.setSpeaker(session.getSpeaker());
-		return sessionForm;
+		return sessionForm.apply(session);
 	}
 }

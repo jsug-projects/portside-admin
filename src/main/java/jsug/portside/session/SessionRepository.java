@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import jsug.portside.JsugProps;
@@ -30,8 +31,15 @@ public class SessionRepository {
 	}
 
 	public Session save(Session session) {
-		restTemplate.postForObject("{apiUrl}/sessions", session, Void.class,
-				props.getApiUrl());
+		String sessionId = session.getId();
+		if (StringUtils.isEmpty(sessionId)) {
+			restTemplate.postForObject("{apiUrl}/sessions", session, Void.class,
+					props.getApiUrl());
+			return session;
+		}
+		
+		restTemplate.put("{apiUrl}/sessions/{sessionId}", session, props.getApiUrl(),
+				sessionId);
 		return session;
 	}
 }
