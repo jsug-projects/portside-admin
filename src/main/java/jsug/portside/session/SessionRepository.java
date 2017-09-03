@@ -26,7 +26,7 @@ public class SessionRepository {
 
 	public List<SessionWithCount> findAllWithCount() {
 		return Arrays
-				.asList(restTemplate.getForObject("{apiUrl}/sessionsWithAttendeeCount",
+				.asList(restTemplate.getForObject("{apiUrl}/sessions/withAttendeeCount",
 						SessionWithCount[].class, props.getApiUrl()));
 	}
 
