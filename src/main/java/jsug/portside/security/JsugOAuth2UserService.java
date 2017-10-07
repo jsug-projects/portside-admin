@@ -32,7 +32,6 @@ public class JsugOAuth2UserService implements OAuth2UserService {
 	public OAuth2User loadUser(OAuth2ClientAuthenticationToken token)
 			throws OAuth2AuthenticationException {
 		Map<String, Object> attributes = userInfoRetriever.retrieve(token);
-		System.out.println(attributes);
 		return new JsugOAuth2User(extractPrincipal(attributes),
 				extractAuthorities(attributes), attributes);
 	}
