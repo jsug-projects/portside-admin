@@ -1,9 +1,13 @@
 package jsug.portside.session;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -17,7 +21,11 @@ public class SessionController {
 
 	@ModelAttribute
 	SessionForm setupForm() {
-		return new SessionForm();
+		SessionForm sessionForm = new SessionForm();
+		Deque<SessionForm.SpeakerForm> speakerForms = new LinkedList<>();
+		speakerForms.add(new SessionForm.SpeakerForm());
+		sessionForm.setSpeakers(speakerForms);
+		return sessionForm;
 	}
 
 	@GetMapping
@@ -40,10 +48,26 @@ public class SessionController {
 	}
 
 	@PostMapping(params = "new")
-	public String newSubmit(SessionForm sessionForm) {
+	public String newSubmit(@Validated SessionForm sessionForm, BindingResult result) {
+		if (result.hasErrors()) {
+			System.out.println(result);
+			return "sessions/new";
+		}
 		Session session = sessionForm.toSession();
 		this.sessionRepository.save(session);
 		return "redirect:/sessions";
+	}
+
+	@PostMapping(params = "add-speaker")
+	public String addSpeaker(SessionForm sessionForm) {
+		sessionForm.getSpeakers().add(new SessionForm.SpeakerForm());
+		return "sessions/new";
+	}
+
+	@PostMapping(params = "remove-speaker")
+	public String removeSpeaker(SessionForm sessionForm) {
+		sessionForm.getSpeakers().removeLast();
+		return "sessions/new";
 	}
 
 	@GetMapping(params = { "update", "id" })

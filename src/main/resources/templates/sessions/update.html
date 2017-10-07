@@ -28,19 +28,63 @@
                     <!-- form start -->
                     <form role="form" method="post" th:action="@{/sessions}" th:object="${sessionForm}">
                         <div class="box-body">
-                            <div class="form-group">
+                            <div class="form-group" th:classappend="${#fields.hasErrors('title') ? 'has-error':''}">
                                 <label for="title">タイトル</label>
                                 <input type="text" class="form-control" id="title" th:field="*{title}">
+                                <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="help-block">error!</span>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group"
+                                 th:classappend="${#fields.hasErrors('description') ? 'has-error':''}">
                                 <label for="description">概要</label>
                                 <textarea id="description" class="form-control" rows="5"
                                           th:field="*{description}"></textarea>
+                                <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}"
+                                      class="help-block">error!</span>
                             </div>
+                            <!--/*/ <th:block th:each="speaker,s : ${sessionForm.speakers}"> /*/-->
                             <div class="form-group">
-                                <label for="speaker">スピーカー</label>
-                                <input type="text" class="form-control" id="speaker" th:field="*{speaker}">
+                                <label th:for="${'speakers' + __${s.index}__} + '.name'"
+                                       th:text="${'スピーカー' + __${s.index}__}">スピーカー</label>
+                                <div class="form-group"
+                                     th:classappend="${#fields.hasErrors('speakers[__${s.index}__].name') ? 'has-error':''}">
+                                    <input type="text" class="form-control"
+                                           th:field="*{speakers[__${s.index}__].name}"
+                                           placeholder="名前">
+                                    <span th:if="${#fields.hasErrors('speakers[__${s.index}__].name')}"
+                                          th:errors="*{speakers[__${s.index}__].name}"
+                                          class="help-block">error!</span>
+                                </div>
+                                <div class="form-group"
+                                     th:classappend="${#fields.hasErrors('speakers[__${s.index}__].belongTo') ? 'has-error':''}">
+                                    <input type="text" class="form-control"
+                                           th:field="*{speakers[__${s.index}__].belongTo}"
+                                           placeholder="所属">
+                                    <span th:if="${#fields.hasErrors('speakers[__${s.index}__].belongTo')}"
+                                          th:errors="*{speakers[__${s.index}__].belongTo}"
+                                          class="help-block">error!</span>
+                                </div>
+                                <div class="form-group"
+                                     th:classappend="${#fields.hasErrors('speakers[__${s.index}__].profile') ? 'has-error':''}">
+                                    <input type="text" class="form-control"
+                                           th:field="*{speakers[__${s.index}__].profile}"
+                                           placeholder="プロフィール">
+                                    <span th:if="${#fields.hasErrors('speakers[__${s.index}__].profile')}"
+                                          th:errors="*{speakers[__${s.index}__].profile}"
+                                          class="help-block">error!</span>
+                                </div>
+                                <div class="form-group"
+                                     th:classappend="${#fields.hasErrors('speakers[__${s.index}__].imageUrl') ? 'has-error':''}">
+                                    <input type="url" class="form-control"
+                                           th:field="*{speakers[__${s.index}__].imageUrl}"
+                                           placeholder="画像URL">
+                                    <span th:if="${#fields.hasErrors('speakers[__${s.index}__].imageUrl')}"
+                                          th:errors="*{speakers[__${s.index}__].imageUrl}"
+                                          class="help-block">error!</span>
+                                </div>
                             </div>
+                            <!--/*/ </th:block> /*/-->
+                            <button type="submit" name="add-speaker" class="btn">スピーカーを増やす</button>
+                            <button type="submit" name="remove-speaker" class="btn">スピーカーを減らす</button>
                         </div>
                         <!-- /.box-body -->
 
