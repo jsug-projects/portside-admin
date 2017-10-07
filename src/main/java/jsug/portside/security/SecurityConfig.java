@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationProperties;
@@ -27,9 +28,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring() //
+				.mvcMatchers("bootstrap/**", "dist/**", "plugins/**") //
+				.requestMatchers(StaticResourceRequest.toCommonLocations());
+	}
+
+	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests() //
-				.requestMatchers(StaticResourceRequest.toCommonLocations()).permitAll() //
 				.anyRequest().hasRole("ADMIN") //
 				.and() //
 				.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
