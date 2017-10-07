@@ -65,9 +65,9 @@
                                 </div>
                                 <div class="form-group"
                                      th:classappend="${#fields.hasErrors('speakers[__${s.index}__].profile') ? 'has-error':''}">
-                                    <input type="text" class="form-control"
-                                           th:field="*{speakers[__${s.index}__].profile}"
-                                           placeholder="プロフィール">
+                                    <textarea class="form-control" rows="3"
+                                              th:field="*{speakers[__${s.index}__].profile}"
+                                              placeholder="プロフィール"></textarea>
                                     <span th:if="${#fields.hasErrors('speakers[__${s.index}__].profile')}"
                                           th:errors="*{speakers[__${s.index}__].profile}"
                                           class="help-block">error!</span>
