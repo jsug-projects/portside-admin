@@ -211,6 +211,10 @@ public class AuthorizationCodeAuthenticationFilter
 
 	private void assertMatchingAuthorizationRequest(HttpServletRequest request,
 			AuthorizationRequest authorizationRequest) {
+		System.err.println("===============================");
+		System.err.println("request  = " + request.getRequestURL().toString());
+		System.err.println("redirect = " + authorizationRequest.getRedirectUri());
+		System.err.println("===============================");
 		String state = request.getParameter(OAuth2Parameter.STATE);
 		if (!authorizationRequest.getState().equals(state)) {
 			OAuth2Error oauth2Error = new OAuth2Error(INVALID_STATE_PARAMETER_ERROR_CODE);
@@ -219,10 +223,6 @@ public class AuthorizationCodeAuthenticationFilter
 
 		if (!request.getRequestURL().toString()
 				.equals(authorizationRequest.getRedirectUri())) {
-			System.err.println("===============================");
-			System.err.println("request  = " + request.getRequestURL().toString());
-			System.err.println("redirect = " + authorizationRequest.getRedirectUri());
-			System.err.println("===============================");
 			OAuth2Error oauth2Error = new OAuth2Error(
 					INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE);
 			throw new OAuth2AuthenticationException(oauth2Error,
