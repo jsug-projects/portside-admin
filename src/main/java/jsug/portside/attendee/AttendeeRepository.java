@@ -1,11 +1,10 @@
 package jsug.portside.attendee;
 
-import java.util.List;
-
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import jsug.portside.JsugProps;
+import reactor.core.publisher.Flux;
 
 @Repository
 public class AttendeeRepository {
@@ -15,11 +14,9 @@ public class AttendeeRepository {
 		this.webClient = builder.baseUrl(props.getApiUrl()).build();
 	}
 
-	public List<Attendee> findAll() {
+	public Flux<Attendee> findAll() {
 		return this.webClient.get().uri("attendees") //
 				.retrieve() //
-				.bodyToFlux(Attendee.class) //
-				.collectList() //
-				.block();
+				.bodyToFlux(Attendee.class);
 	}
 }

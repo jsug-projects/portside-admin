@@ -2,13 +2,14 @@ package jsug.portside.session;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequestMapping("sessions")
@@ -29,17 +30,23 @@ public class SessionController {
 	}
 
 	@GetMapping
-	public String index(Model model) {
-		List<Session> sessions = this.sessionRepository.findAll();
-		model.addAttribute("sessions", sessions);
-		return "sessions/index";
+	public Mono<String> index(Model model) {
+		return this.sessionRepository.findAll() //
+				.collectList() //
+				.map(sessions -> {
+					model.addAttribute("sessions", sessions);
+					return "sessions/index";
+				});
 	}
 
 	@GetMapping(params = "count")
-	public String count(Model model) {
-		List<SessionWithCount> sessions = this.sessionRepository.findAllWithCount();
-		model.addAttribute("sessions", sessions);
-		return "sessions/count";
+	public Mono<String> count(Model model) {
+		return this.sessionRepository.findAllWithCount() //
+				.collectList() //
+				.map(sessions -> {
+					model.addAttribute("sessions", sessions);
+					return "sessions/count";
+				});
 	}
 
 	@GetMapping(params = "new")
@@ -48,14 +55,14 @@ public class SessionController {
 	}
 
 	@PostMapping(params = "new")
-	public String newSubmit(@Validated SessionForm sessionForm, BindingResult result) {
+	public Mono<String> newSubmit(@Validated SessionForm sessionForm,
+			BindingResult result) {
 		if (result.hasErrors()) {
-			System.out.println(result);
-			return "sessions/new";
+			return Mono.just("sessions/new");
 		}
 		Session session = sessionForm.toSession();
-		this.sessionRepository.save(session);
-		return "redirect:/sessions";
+		return this.sessionRepository.save(session) //
+				.then(Mono.just("redirect:/sessions"));
 	}
 
 	@PostMapping(params = "add-speaker")
@@ -78,9 +85,9 @@ public class SessionController {
 	}
 
 	@PostMapping(params = { "update", "id" })
-	public String update(SessionForm sessionForm, @RequestParam String id) {
+	public Mono<String> update(SessionForm sessionForm, @RequestParam String id) {
 		Session session = sessionForm.toSession(id);
-		this.sessionRepository.save(session);
-		return "redirect:/sessions";
+		return this.sessionRepository.save(session) //
+				.then(Mono.just("redirect:/sessions"));
 	}
 }
