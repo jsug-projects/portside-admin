@@ -20,26 +20,25 @@ public class SessionRepository {
 	}
 
 	public List<Session> findAll() {
-		return Arrays.asList(restTemplate.getForObject("{apiUrl}/sessions",
-				Session[].class, props.getApiUrl()));
+		return Arrays.asList(restTemplate.getForObject(props.getApiUrl() + "/sessions",
+				Session[].class));
 	}
 
 	public List<SessionWithCount> findAllWithCount() {
-		return Arrays
-				.asList(restTemplate.getForObject("{apiUrl}/sessions/withAttendeeCount",
-						SessionWithCount[].class, props.getApiUrl()));
+		return Arrays.asList(restTemplate.getForObject(
+				props.getApiUrl() + "/sessions/withAttendeeCount",
+				SessionWithCount[].class, props.getApiUrl()));
 	}
 
 	public Session save(Session session) {
 		String sessionId = session.getId();
 		if (StringUtils.isEmpty(sessionId)) {
-			restTemplate.postForObject("{apiUrl}/sessions", session, Void.class,
-					props.getApiUrl());
+			restTemplate.postForObject(props.getApiUrl() + "/sessions", session,
+					Void.class);
 			return session;
 		}
-		
-		restTemplate.put("{apiUrl}/sessions/{sessionId}", session, props.getApiUrl(),
-				sessionId);
+
+		restTemplate.put(props.getApiUrl() + "/sessions/{sessionId}", session, sessionId);
 		return session;
 	}
 }

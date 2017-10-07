@@ -19,7 +19,7 @@ public class AttendeeRepository {
 	}
 
 	public List<Attendee> findAll() {
-		return Arrays.asList(restTemplate.getForObject("{apiUrl}/attendees",
-				Attendee[].class, props.getApiUrl()));
+		return Arrays.asList(restTemplate.getForObject(props.getApiUrl() + "/attendees",
+				Attendee[].class));
 	}
 }

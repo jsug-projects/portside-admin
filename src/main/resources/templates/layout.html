@@ -78,7 +78,7 @@ desired effect
                         <!-- Menu Toggle Button -->
                         <a th:if="${#authentication != null}" href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <!-- The user image in the navbar-->
-                            <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}"
+                            <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.user.avatarUrl}"
                                  class="user-image" alt="User Image">
                             <!-- hidden-xs hides the username on small devices so only the image appears. -->
                             <span class="hidden-xs" sec:authentication="principal.name">Alexander Pierce</span>
@@ -106,7 +106,7 @@ desired effect
                 <!-- Sidebar user panel -->
                 <div th:if="${#authentication != null}" class="user-panel">
                     <div class="pull-left image">
-                        <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.avatarUrl}"
+                        <img src="dist/img/user2-160x160.jpg" th:src="${#authentication.principal.user.avatarUrl}"
                              class="img-circle" alt="User Image">
                     </div>
                     <div class="pull-left info">
