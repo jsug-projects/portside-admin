@@ -213,7 +213,12 @@ public class AuthorizationCodeAuthenticationFilter
 			AuthorizationRequest authorizationRequest) {
 		System.err.println("===============================");
 		System.err.println("request  = " + request.getRequestURL().toString());
-		System.err.println("redirect = " + authorizationRequest.getRedirectUri());
+		String redirectUri = authorizationRequest.getRedirectUri();
+		System.err.println("redirect = " + redirectUri);
+		if (redirectUri.startsWith("https://") && redirectUri.contains(":443/")) {
+			redirectUri = redirectUri.replace(":443/", "/");
+		}
+		System.err.println("redirect = " + redirectUri);
 		System.err.println("===============================");
 		String state = request.getParameter(OAuth2Parameter.STATE);
 		if (!authorizationRequest.getState().equals(state)) {
@@ -221,13 +226,12 @@ public class AuthorizationCodeAuthenticationFilter
 			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
 		}
 
-		if (!request.getRequestURL().toString()
-				.equals(authorizationRequest.getRedirectUri())) {
+		if (!request.getRequestURL().toString().equals(redirectUri)) {
 			OAuth2Error oauth2Error = new OAuth2Error(
 					INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE);
 			throw new OAuth2AuthenticationException(oauth2Error,
 					request.getRequestURL().toString() + " does not match "
-							+ authorizationRequest.getRedirectUri());
+							+ redirectUri);
 		}
 	}
 
