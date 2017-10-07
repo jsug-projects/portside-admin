@@ -42,27 +42,28 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * An implementation of an {@link AbstractAuthenticationProcessingFilter} that handles the
- * processing of an <i>OAuth 2.0 Authorization Response</i> for the authorization code
- * grant flow.
+ * An implementation of an {@link AbstractAuthenticationProcessingFilter} that handles
+ * the processing of an <i>OAuth 2.0 Authorization Response</i> for the authorization code grant flow.
  *
  * <p>
  * This <code>Filter</code> processes the <i>Authorization Response</i> as follows:
  *
  * <ul>
- * <li>Assuming the resource owner (end-user) has granted access to the client, the
- * authorization server will append the {@link OAuth2Parameter#CODE} and
- * {@link OAuth2Parameter#STATE} (if provided in the <i>Authorization Request</i>)
- * parameters to the {@link OAuth2Parameter#REDIRECT_URI} (provided in the
- * <i>Authorization Request</i>) and redirect the end-user's user-agent back to this
- * <code>Filter</code> (the client).</li>
- * <li>This <code>Filter</code> will then create an
- * {@link AuthorizationCodeAuthenticationToken} with the {@link OAuth2Parameter#CODE}
- * received in the previous step and delegate it to
- * {@link AuthorizationCodeAuthenticationProvider#authenticate(Authentication)}
- * (indirectly via {@link AuthenticationManager}).</li>
+ * <li>
+ *	Assuming the resource owner (end-user) has granted access to the client, the authorization server will append the
+ *	{@link OAuth2Parameter#CODE} and {@link OAuth2Parameter#STATE} (if provided in the <i>Authorization Request</i>) parameters
+ *	to the {@link OAuth2Parameter#REDIRECT_URI} (provided in the <i>Authorization Request</i>)
+ *	and redirect the end-user's user-agent back to this <code>Filter</code> (the client).
+ * </li>
+ * <li>
+ *  This <code>Filter</code> will then create an {@link AuthorizationCodeAuthenticationToken} with
+ *  the {@link OAuth2Parameter#CODE} received in the previous step and delegate it to
+ *  {@link AuthorizationCodeAuthenticationProvider#authenticate(Authentication)} (indirectly via {@link AuthenticationManager}).
+ * </li>
  * </ul>
  *
  * @author Joe Grandja
@@ -74,14 +75,10 @@ import org.springframework.util.StringUtils;
  * @see AuthorizationRequest
  * @see AuthorizationRequestRepository
  * @see ClientRegistrationRepository
- * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section
- * 4.1 Authorization Code Grant Flow</a>
- * @see <a target="_blank" href=
- * "https://tools.ietf.org/html/rfc6749#section-4.1.2">Section 4.1.2 Authorization
- * Response</a>
+ * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section 4.1 Authorization Code Grant Flow</a>
+ * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1.2">Section 4.1.2 Authorization Response</a>
  */
-public class AuthorizationCodeAuthenticationFilter
-		extends AbstractAuthenticationProcessingFilter {
+public class AuthorizationCodeAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 	public static final String DEFAULT_AUTHORIZATION_RESPONSE_BASE_URI = "/oauth2/authorize/code";
 	private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
 	private static final String INVALID_STATE_PARAMETER_ERROR_CODE = "invalid_state_parameter";
@@ -97,66 +94,50 @@ public class AuthorizationCodeAuthenticationFilter
 	}
 
 	@Override
-	public Authentication attemptAuthentication(HttpServletRequest request,
-			HttpServletResponse response)
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException, IOException, ServletException {
 
-		AuthorizationResponse authorizationResponse = this.authorizationResponseConverter
-				.apply(request);
+		AuthorizationResponse authorizationResponse = this.authorizationResponseConverter.apply(request);
 
 		if (authorizationResponse.statusError()) {
 			this.getAuthorizationRequestRepository().removeAuthorizationRequest(request);
-			throw new OAuth2AuthenticationException(authorizationResponse.getError(),
-					authorizationResponse.getError().toString());
+			throw new OAuth2AuthenticationException(
+					authorizationResponse.getError(), authorizationResponse.getError().toString());
 		}
 
-		AuthorizationRequest matchingAuthorizationRequest = this
-				.resolveAuthorizationRequest(request);
-		String registrationId = (String) matchingAuthorizationRequest
-				.getAdditionalParameters().get(OAuth2Parameter.REGISTRATION_ID);
-		ClientRegistration clientRegistration = this.getClientRegistrationRepository()
-				.findByRegistrationId(registrationId);
+		AuthorizationRequest matchingAuthorizationRequest = this.resolveAuthorizationRequest(request);
+		String registrationId = (String)matchingAuthorizationRequest.getAdditionalParameters().get(OAuth2Parameter.REGISTRATION_ID);
+		ClientRegistration clientRegistration = this.getClientRegistrationRepository().findByRegistrationId(registrationId);
 
-		// The clientRegistration.redirectUri may contain Uri template variables, whether
-		// it's configured by
-		// the user or configured by default. In these cases, the redirectUri will be
-		// expanded and ultimately changed
-		// (by AuthorizationCodeRequestRedirectFilter) before setting it in the
-		// authorization request.
-		// The resulting redirectUri used for the authorization request and saved within
-		// the AuthorizationRequestRepository
+		// The clientRegistration.redirectUri may contain Uri template variables, whether it's configured by
+		// the user or configured by default. In these cases, the redirectUri will be expanded and ultimately changed
+		// (by AuthorizationCodeRequestRedirectFilter) before setting it in the authorization request.
+		// The resulting redirectUri used for the authorization request and saved within the AuthorizationRequestRepository
 		// MUST BE the same one used to complete the authorization code flow.
-		// Therefore, we'll create a copy of the clientRegistration and override the
-		// redirectUri
+		// Therefore, we'll create a copy of the clientRegistration and override the redirectUri
 		// with the one contained in matchingAuthorizationRequest.
 		clientRegistration = new ClientRegistration.Builder(clientRegistration)
-				.redirectUri(matchingAuthorizationRequest.getRedirectUri()).build();
+				.redirectUri(matchingAuthorizationRequest.getRedirectUri())
+				.build();
 
 		AuthorizationCodeAuthenticationToken authorizationCodeAuthentication = new AuthorizationCodeAuthenticationToken(
-				authorizationResponse.getCode(), clientRegistration,
-				matchingAuthorizationRequest);
-		authorizationCodeAuthentication
-				.setDetails(this.authenticationDetailsSource.buildDetails(request));
+				authorizationResponse.getCode(), clientRegistration, matchingAuthorizationRequest);
+		authorizationCodeAuthentication.setDetails(this.authenticationDetailsSource.buildDetails(request));
 
-		OAuth2ClientAuthenticationToken oauth2ClientAuthentication = (OAuth2ClientAuthenticationToken) this
-				.getAuthenticationManager().authenticate(authorizationCodeAuthentication);
+		OAuth2ClientAuthenticationToken oauth2ClientAuthentication =
+				(OAuth2ClientAuthenticationToken)this.getAuthenticationManager().authenticate(authorizationCodeAuthentication);
 
 		OAuth2UserAuthenticationToken oauth2UserAuthentication;
-		if (this.authenticated()
-				&& this.authenticatedSameProviderAs(oauth2ClientAuthentication)) {
+		if (this.authenticated() && this.authenticatedSameProviderAs(oauth2ClientAuthentication)) {
 			// Create a new user authentication (using same principal)
 			// but with a different client authentication association
-			oauth2UserAuthentication = (OAuth2UserAuthenticationToken) SecurityContextHolder
-					.getContext().getAuthentication();
-			oauth2UserAuthentication = this.createUserAuthentication(
-					oauth2UserAuthentication, oauth2ClientAuthentication);
-		}
-		else {
+			oauth2UserAuthentication = (OAuth2UserAuthenticationToken)SecurityContextHolder.getContext().getAuthentication();
+			oauth2UserAuthentication = this.createUserAuthentication(oauth2UserAuthentication, oauth2ClientAuthentication);
+		} else {
 			// Authenticate the user... the user needs to be authenticated
 			// before we can associate the client authentication to the user
-			oauth2UserAuthentication = (OAuth2UserAuthenticationToken) this
-					.getAuthenticationManager().authenticate(
-							this.createUserAuthentication(oauth2ClientAuthentication));
+			oauth2UserAuthentication = (OAuth2UserAuthenticationToken)this.getAuthenticationManager().authenticate(
+					this.createUserAuthentication(oauth2ClientAuthentication));
 		}
 
 		return oauth2UserAuthentication;
@@ -166,10 +147,8 @@ public class AuthorizationCodeAuthenticationFilter
 		return this.authorizationResponseMatcher;
 	}
 
-	public final <T extends RequestMatcher> void setAuthorizationResponseMatcher(
-			T authorizationResponseMatcher) {
-		Assert.notNull(authorizationResponseMatcher,
-				"authorizationResponseMatcher cannot be null");
+	public final <T extends RequestMatcher> void setAuthorizationResponseMatcher(T authorizationResponseMatcher) {
+		Assert.notNull(authorizationResponseMatcher, "authorizationResponseMatcher cannot be null");
 		this.authorizationResponseMatcher = authorizationResponseMatcher;
 		this.setRequiresAuthenticationRequestMatcher(authorizationResponseMatcher);
 	}
@@ -178,10 +157,8 @@ public class AuthorizationCodeAuthenticationFilter
 		return this.clientRegistrationRepository;
 	}
 
-	public final void setClientRegistrationRepository(
-			ClientRegistrationRepository clientRegistrationRepository) {
-		Assert.notNull(clientRegistrationRepository,
-				"clientRegistrationRepository cannot be null");
+	public final void setClientRegistrationRepository(ClientRegistrationRepository clientRegistrationRepository) {
+		Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
 		this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
@@ -189,19 +166,16 @@ public class AuthorizationCodeAuthenticationFilter
 		return this.authorizationRequestRepository;
 	}
 
-	public final void setAuthorizationRequestRepository(
-			AuthorizationRequestRepository authorizationRequestRepository) {
-		Assert.notNull(authorizationRequestRepository,
-				"authorizationRequestRepository cannot be null");
+	public final void setAuthorizationRequestRepository(AuthorizationRequestRepository authorizationRequestRepository) {
+		Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
 		this.authorizationRequestRepository = authorizationRequestRepository;
 	}
 
 	private AuthorizationRequest resolveAuthorizationRequest(HttpServletRequest request) {
-		AuthorizationRequest authorizationRequest = this
-				.getAuthorizationRequestRepository().loadAuthorizationRequest(request);
+		AuthorizationRequest authorizationRequest =
+				this.getAuthorizationRequestRepository().loadAuthorizationRequest(request);
 		if (authorizationRequest == null) {
-			OAuth2Error oauth2Error = new OAuth2Error(
-					AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE);
+			OAuth2Error oauth2Error = new OAuth2Error(AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE);
 			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
 		}
 		this.getAuthorizationRequestRepository().removeAuthorizationRequest(request);
@@ -211,59 +185,46 @@ public class AuthorizationCodeAuthenticationFilter
 
 	private void assertMatchingAuthorizationRequest(HttpServletRequest request,
 			AuthorizationRequest authorizationRequest) {
-		System.err.println("===============================");
-		System.err.println("request  = " + request.getRequestURL().toString());
-		String redirectUri = authorizationRequest.getRedirectUri();
-		System.err.println("redirect = " + redirectUri);
-		if (redirectUri.startsWith("https://") && redirectUri.contains(":443/")) {
-			redirectUri = redirectUri.replace(":443/", "/");
-		}
-		System.err.println("redirect = " + redirectUri);
-		System.err.println("===============================");
 		String state = request.getParameter(OAuth2Parameter.STATE);
 		if (!authorizationRequest.getState().equals(state)) {
 			OAuth2Error oauth2Error = new OAuth2Error(INVALID_STATE_PARAMETER_ERROR_CODE);
 			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
 		}
 
-		if (!request.getRequestURL().toString().equals(redirectUri)) {
+		UriComponents requestUri = fixWellKnowPort(
+				UriComponentsBuilder.fromHttpUrl(request.getRequestURL().toString())).build();
+		UriComponents redirectUri = fixWellKnowPort(
+				UriComponentsBuilder.fromHttpUrl(authorizationRequest.getRedirectUri())).build();
+		if (!requestUri.equals(redirectUri)) {
 			OAuth2Error oauth2Error = new OAuth2Error(
 					INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE);
-			throw new OAuth2AuthenticationException(oauth2Error,
-					request.getRequestURL().toString() + " does not match "
-							+ redirectUri);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
 		}
 	}
 
 	private boolean authenticated() {
-		Authentication currentAuthentication = SecurityContextHolder.getContext()
-				.getAuthentication();
-		return currentAuthentication != null
-				&& currentAuthentication instanceof OAuth2UserAuthenticationToken
-				&& currentAuthentication.isAuthenticated();
+		Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
+		return currentAuthentication != null &&
+				currentAuthentication instanceof OAuth2UserAuthenticationToken &&
+				currentAuthentication.isAuthenticated();
 	}
 
-	private boolean authenticatedSameProviderAs(
-			OAuth2ClientAuthenticationToken oauth2ClientAuthentication) {
-		OAuth2UserAuthenticationToken userAuthentication = (OAuth2UserAuthenticationToken) SecurityContextHolder
-				.getContext().getAuthentication();
+	private boolean authenticatedSameProviderAs(OAuth2ClientAuthenticationToken oauth2ClientAuthentication) {
+		OAuth2UserAuthenticationToken userAuthentication =
+				(OAuth2UserAuthenticationToken)SecurityContextHolder.getContext().getAuthentication();
 
 		String userProviderId = this.providerIdentifierStrategy.getIdentifier(
 				userAuthentication.getClientAuthentication().getClientRegistration());
-		String clientProviderId = this.providerIdentifierStrategy
-				.getIdentifier(oauth2ClientAuthentication.getClientRegistration());
+		String clientProviderId = this.providerIdentifierStrategy.getIdentifier(
+				oauth2ClientAuthentication.getClientRegistration());
 
 		return userProviderId.equals(clientProviderId);
 	}
 
-	private OAuth2UserAuthenticationToken createUserAuthentication(
-			OAuth2ClientAuthenticationToken clientAuthentication) {
-		if (OidcClientAuthenticationToken.class
-				.isAssignableFrom(clientAuthentication.getClass())) {
-			return new OidcUserAuthenticationToken(
-					(OidcClientAuthenticationToken) clientAuthentication);
-		}
-		else {
+	private OAuth2UserAuthenticationToken createUserAuthentication(OAuth2ClientAuthenticationToken clientAuthentication) {
+		if (OidcClientAuthenticationToken.class.isAssignableFrom(clientAuthentication.getClass())) {
+			return new OidcUserAuthenticationToken((OidcClientAuthenticationToken)clientAuthentication);
+		} else {
 			return new OAuth2UserAuthenticationToken(clientAuthentication);
 		}
 	}
@@ -272,16 +233,16 @@ public class AuthorizationCodeAuthenticationFilter
 			OAuth2UserAuthenticationToken currentUserAuthentication,
 			OAuth2ClientAuthenticationToken newClientAuthentication) {
 
-		if (OidcUserAuthenticationToken.class
-				.isAssignableFrom(currentUserAuthentication.getClass())) {
+		if (OidcUserAuthenticationToken.class.isAssignableFrom(currentUserAuthentication.getClass())) {
 			return new OidcUserAuthenticationToken(
 					(OidcUser) currentUserAuthentication.getPrincipal(),
-					currentUserAuthentication.getAuthorities(), newClientAuthentication);
-		}
-		else {
+					currentUserAuthentication.getAuthorities(),
+					newClientAuthentication);
+		} else {
 			return new OAuth2UserAuthenticationToken(
-					(OAuth2User) currentUserAuthentication.getPrincipal(),
-					currentUserAuthentication.getAuthorities(), newClientAuthentication);
+					(OAuth2User)currentUserAuthentication.getPrincipal(),
+					currentUserAuthentication.getAuthorities(),
+					newClientAuthentication);
 		}
 	}
 
@@ -293,31 +254,42 @@ public class AuthorizationCodeAuthenticationFilter
 		}
 
 		private boolean successResponse(HttpServletRequest request) {
-			return StringUtils.hasText(request.getParameter(OAuth2Parameter.CODE))
-					&& StringUtils.hasText(request.getParameter(OAuth2Parameter.STATE));
+			return StringUtils.hasText(request.getParameter(OAuth2Parameter.CODE)) &&
+					StringUtils.hasText(request.getParameter(OAuth2Parameter.STATE));
 		}
 
 		private boolean errorResponse(HttpServletRequest request) {
-			return StringUtils.hasText(request.getParameter(OAuth2Parameter.ERROR))
-					&& StringUtils.hasText(request.getParameter(OAuth2Parameter.STATE));
+			return StringUtils.hasText(request.getParameter(OAuth2Parameter.ERROR)) &&
+					StringUtils.hasText(request.getParameter(OAuth2Parameter.STATE));
 		}
 	}
 
-	private static class ProviderIdentifierStrategy
-			implements ClientRegistrationIdentifierStrategy<String> {
+	private static class ProviderIdentifierStrategy implements ClientRegistrationIdentifierStrategy<String> {
 
 		@Override
 		public String getIdentifier(ClientRegistration clientRegistration) {
 			StringBuilder builder = new StringBuilder();
-			builder.append("[")
-					.append(clientRegistration.getProviderDetails().getAuthorizationUri())
-					.append("]");
-			builder.append("[")
-					.append(clientRegistration.getProviderDetails().getTokenUri())
-					.append("]");
-			builder.append("[").append(clientRegistration.getProviderDetails()
-					.getUserInfoEndpoint().getUri()).append("]");
+			builder.append("[").append(clientRegistration.getProviderDetails().getAuthorizationUri()).append("]");
+			builder.append("[").append(clientRegistration.getProviderDetails().getTokenUri()).append("]");
+			builder.append("[").append(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUri()).append("]");
 			return builder.toString();
 		}
+	}
+
+	private UriComponentsBuilder fixWellKnowPort(UriComponentsBuilder b) {
+		UriComponents c = b.build();
+		if (c.getPort() != -1) {
+			return b;
+		}
+		if (c.getScheme() == null) {
+			return b;
+		}
+		switch (c.getScheme()) {
+			case "http":
+				return b.port(80);
+			case "https":
+				return b.port(443);
+		}
+		return b;
 	}
 }
