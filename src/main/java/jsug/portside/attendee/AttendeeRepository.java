@@ -1,25 +1,25 @@
 package jsug.portside.attendee;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jsug.portside.JsugProps;
 
 @Repository
 public class AttendeeRepository {
-	private final RestTemplate restTemplate;
-	private final JsugProps props;
+	private final WebClient webClient;
 
-	public AttendeeRepository(RestTemplate restTemplate, JsugProps props) {
-		this.restTemplate = restTemplate;
-		this.props = props;
+	public AttendeeRepository(JsugProps props, WebClient.Builder builder) {
+		this.webClient = builder.baseUrl(props.getApiUrl()).build();
 	}
 
 	public List<Attendee> findAll() {
-		return Arrays.asList(restTemplate.getForObject(props.getApiUrl() + "/attendees",
-				Attendee[].class));
+		return this.webClient.get().uri("attendees") //
+				.retrieve() //
+				.bodyToFlux(Attendee.class) //
+				.collectList() //
+				.block();
 	}
 }

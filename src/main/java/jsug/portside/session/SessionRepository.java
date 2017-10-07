@@ -1,44 +1,50 @@
 package jsug.portside.session;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jsug.portside.JsugProps;
+import reactor.core.publisher.Mono;
 
 @Repository
 public class SessionRepository {
-	private final RestTemplate restTemplate;
-	private final JsugProps props;
+	private final WebClient webClient;
 
-	public SessionRepository(RestTemplate restTemplate, JsugProps props) {
-		this.restTemplate = restTemplate;
-		this.props = props;
+	public SessionRepository(JsugProps props, WebClient.Builder builder) {
+		this.webClient = builder.baseUrl(props.getApiUrl()).build();
 	}
 
 	public List<Session> findAll() {
-		return Arrays.asList(restTemplate.getForObject(props.getApiUrl() + "/sessions",
-				Session[].class));
+		return this.webClient.get().uri("sessions") //
+				.retrieve() //
+				.bodyToFlux(Session.class) //
+				.collectList() //
+				.block();
 	}
 
 	public List<SessionWithCount> findAllWithCount() {
-		return Arrays.asList(restTemplate.getForObject(
-				props.getApiUrl() + "/sessions/withAttendeeCount",
-				SessionWithCount[].class, props.getApiUrl()));
+		return this.webClient.get().uri("sessions/withAttendeeCount") //
+				.retrieve() //
+				.bodyToFlux(SessionWithCount.class) //
+				.collectList() //
+				.block();
 	}
 
 	public Session save(Session session) {
 		String sessionId = session.getId();
 		if (StringUtils.isEmpty(sessionId)) {
-			restTemplate.postForObject(props.getApiUrl() + "/sessions", session,
-					Void.class);
-			return session;
+			return this.webClient.post().uri("sessions") //
+					.syncBody(session) //
+					.retrieve() //
+					.bodyToMono(Void.class) //
+					.then(Mono.just(session)) //
+					.block();
 		}
-
-		restTemplate.put(props.getApiUrl() + "/sessions/{sessionId}", session, sessionId);
-		return session;
+		return this.webClient.put().uri("sessions/{sessionId}", sessionId)
+				.syncBody(session).retrieve().bodyToMono(Void.class)
+				.then(Mono.just(session)).block();
 	}
 }
