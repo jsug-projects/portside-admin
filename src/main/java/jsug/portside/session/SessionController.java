@@ -90,4 +90,10 @@ public class SessionController {
 		return this.sessionRepository.save(session) //
 				.then(Mono.just("redirect:/sessions"));
 	}
+
+	@PostMapping(params = { "delete", "id" })
+	public Mono<String> delete(@RequestParam String id) {
+		return this.sessionRepository.delete(id) //
+				.then(Mono.just("redirect:/sessions"));
+	}
 }

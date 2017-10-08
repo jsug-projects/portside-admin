@@ -56,6 +56,11 @@
                                         <!--/*/ </th:block> /*/-->
                                         <input type="hidden" name="description" th:value="${ses.description}">
                                     </form>
+                                    <form method="post" th:action="@{/sessions}"
+                                          onsubmit="return confirm('本当に削除しますか？');">
+                                        <input type="submit" value="削除" name="delete" class="btn btn-danger">
+                                        <input type="hidden" name="id" th:value="${ses.id}">
+                                    </form>
                                 </td>
                             </tr>
                             </tbody>

@@ -41,4 +41,10 @@ public class SessionRepository {
 				.syncBody(session).retrieve().bodyToMono(Void.class)
 				.then(Mono.just(session));
 	}
+
+	public Mono<Void> delete(String id) {
+		return this.webClient.delete().uri("sessions/{sessionId}", id) //
+				.exchange() //
+				.then();
+	}
 }
