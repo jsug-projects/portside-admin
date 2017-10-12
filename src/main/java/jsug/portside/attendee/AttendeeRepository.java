@@ -11,7 +11,8 @@ public class AttendeeRepository {
 	private final WebClient webClient;
 
 	public AttendeeRepository(JsugProps props, WebClient.Builder builder) {
-		this.webClient = builder.baseUrl(props.getApiUrl()).build();
+		this.webClient = builder.defaultHeaders(props.toHeaders())
+				.baseUrl(props.getApiUrl()).build();
 	}
 
 	public Flux<Attendee> findAll() {

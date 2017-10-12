@@ -3,3 +3,5 @@ applications:
   buildpack: https://github.com/cloudfoundry/java-buildpack#v3.19
   memory: 1g
   path: target/portside-admin-0.0.1-SNAPSHOT.jar
+  services:
+  - portside-admin-user # cf cups portside-admin-user -p '{"username":"user", "password":"pass"}'
