@@ -84,7 +84,6 @@ public class AuthorizationCodeAuthenticationProvider implements AuthenticationPr
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
-
         UriComponents requestUri = fixWellKnowPort(
                 UriComponentsBuilder.fromHttpUrl(authorizationResponse.getRedirectUri())).build();
         UriComponents redirectUri = fixWellKnowPort(
@@ -95,14 +94,14 @@ public class AuthorizationCodeAuthenticationProvider implements AuthenticationPr
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
-        OAuth2ClientAuthenticationToken oauth2ClientAuthentication =
+        OAuth2ClientAuthenticationToken clientAuthentication =
                 this.authorizationCodeAuthenticator.authenticate(authorizationCodeAuthentication);
 
         this.accessTokenRepository.saveSecurityToken(
-                oauth2ClientAuthentication.getAccessToken(),
-                oauth2ClientAuthentication.getClientRegistration());
+                clientAuthentication.getAccessToken(),
+                clientAuthentication.getClientRegistration());
 
-        return oauth2ClientAuthentication;
+        return clientAuthentication;
     }
 
     public final void setAccessTokenRepository(SecurityTokenRepository<AccessToken> accessTokenRepository) {
