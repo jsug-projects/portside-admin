@@ -10,9 +10,9 @@ import java.util.Optional;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.client.authentication.OAuth2ClientAuthenticationToken;
-import org.springframework.security.oauth2.client.user.OAuth2UserService;
-import org.springframework.security.oauth2.client.user.UserInfoRetriever;
-import org.springframework.security.oauth2.client.user.nimbus.NimbusUserInfoRetriever;
+import org.springframework.security.oauth2.client.authentication.userinfo.NimbusUserInfoRetriever;
+import org.springframework.security.oauth2.client.authentication.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.authentication.userinfo.UserInfoRetriever;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 

@@ -24,110 +24,133 @@ import org.springframework.security.oauth2.core.AccessToken;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.AuthorizationResponse;
-import org.springframework.security.oauth2.oidc.client.authentication.OidcClientAuthenticationToken;
+import org.springframework.security.oauth2.core.endpoint.TokenResponse;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * An implementation of an {@link AuthenticationProvider} that is responsible for authenticating
- * an <i>authorization code</i> credential with the authorization server's <i>Token Endpoint</i>
- * and if valid, exchanging it for an <i>access token</i> credential and optionally an
- * <i>id token</i> credential (for OpenID Connect Authorization Code Flow).
+ * An implementation of an {@link AuthenticationProvider} for the <i>OAuth 2.0
+ * Authorization Code Grant Flow</i>.
  *
- * <p>
- * The {@link AuthorizationCodeAuthenticationProvider} uses an {@link AuthorizationGrantAuthenticator}
- * to authenticate the <i>authorization code</i> credential and ultimately
- * return an <i>&quot;Authorized Client&quot;</i> as an {@link OAuth2ClientAuthenticationToken}.
+ * This {@link AuthenticationProvider} is responsible for authenticating an
+ * <i>authorization code</i> credential with the authorization server's <i>Token
+ * Endpoint</i> and if valid, exchanging it for an <i>access token</i> credential.
  *
  * @author Joe Grandja
  * @since 5.0
  * @see AuthorizationCodeAuthenticationToken
  * @see OAuth2ClientAuthenticationToken
- * @see OidcClientAuthenticationToken
- * @see AuthorizationGrantAuthenticator
  * @see SecurityTokenRepository
- * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section 4.1 Authorization Code Grant Flow</a>
- * @see <a target="_blank" href="http://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth">Section 3.1 OpenID Connect Authorization Code Flow</a>
- * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1.3">Section 4.1.3 Access Token Request</a>
- * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1.4">Section 4.1.4 Access Token Response</a>
- * @see <a target="_blank" href="http://openid.net/specs/openid-connect-core-1_0.html#TokenResponse">Section 3.1.3.3 OpenID Connect Token Response</a>
+ * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section
+ * 4.1 Authorization Code Grant Flow</a>
+ * @see <a target="_blank" href=
+ * "https://tools.ietf.org/html/rfc6749#section-4.1.3">Section 4.1.3 Access Token
+ * Request</a>
+ * @see <a target="_blank" href=
+ * "https://tools.ietf.org/html/rfc6749#section-4.1.4">Section 4.1.4 Access Token
+ * Response</a>
  */
 public class AuthorizationCodeAuthenticationProvider implements AuthenticationProvider {
-    private static final String INVALID_STATE_PARAMETER_ERROR_CODE = "invalid_state_parameter";
-    private static final String INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE = "invalid_redirect_uri_parameter";
-    private final AuthorizationGrantAuthenticator<AuthorizationCodeAuthenticationToken> authorizationCodeAuthenticator;
-    private SecurityTokenRepository<AccessToken> accessTokenRepository = new InMemoryAccessTokenRepository();
+	private static final String INVALID_STATE_PARAMETER_ERROR_CODE = "invalid_state_parameter";
+	private static final String INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE = "invalid_redirect_uri_parameter";
+	private final AuthorizationGrantTokenExchanger<AuthorizationCodeAuthenticationToken> authorizationCodeTokenExchanger;
+	private SecurityTokenRepository<AccessToken> accessTokenRepository = new InMemoryAccessTokenRepository();
 
-    public AuthorizationCodeAuthenticationProvider(
-            AuthorizationGrantAuthenticator<AuthorizationCodeAuthenticationToken> authorizationCodeAuthenticator) {
+	public AuthorizationCodeAuthenticationProvider(
+			AuthorizationGrantTokenExchanger<AuthorizationCodeAuthenticationToken> authorizationCodeTokenExchanger) {
 
-        Assert.notNull(authorizationCodeAuthenticator, "authorizationCodeAuthenticator cannot be null");
-        this.authorizationCodeAuthenticator = authorizationCodeAuthenticator;
-    }
+		Assert.notNull(authorizationCodeTokenExchanger,
+				"authorizationCodeTokenExchanger cannot be null");
+		this.authorizationCodeTokenExchanger = authorizationCodeTokenExchanger;
+	}
 
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        AuthorizationCodeAuthenticationToken authorizationCodeAuthentication =
-                (AuthorizationCodeAuthenticationToken) authentication;
+	@Override
+	public Authentication authenticate(Authentication authentication)
+			throws AuthenticationException {
+		AuthorizationCodeAuthenticationToken authorizationCodeAuthentication = (AuthorizationCodeAuthenticationToken) authentication;
 
-        AuthorizationRequest authorizationRequest = authorizationCodeAuthentication.getAuthorizationRequest();
-        AuthorizationResponse authorizationResponse = authorizationCodeAuthentication.getAuthorizationResponse();
+		// Section 3.1.2.1 Authentication Request -
+		// http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+		// scope
+		// REQUIRED. OpenID Connect requests MUST contain the "openid" scope value.
+		if (authorizationCodeAuthentication.getAuthorizationExchange()
+				.getAuthorizationRequest().getScopes().contains("openid")) {
+			// This is an OpenID Connect Authentication Request so return null
+			// and let OidcAuthorizationCodeAuthenticationProvider handle it instead
+			return null;
+		}
 
-        if (authorizationResponse.statusError()) {
-            throw new OAuth2AuthenticationException(
-                    authorizationResponse.getError(), authorizationResponse.getError().toString());
-        }
+		AuthorizationRequest authorizationRequest = authorizationCodeAuthentication
+				.getAuthorizationExchange().getAuthorizationRequest();
+		AuthorizationResponse authorizationResponse = authorizationCodeAuthentication
+				.getAuthorizationExchange().getAuthorizationResponse();
 
-        if (!authorizationResponse.getState().equals(authorizationRequest.getState())) {
-            OAuth2Error oauth2Error = new OAuth2Error(INVALID_STATE_PARAMETER_ERROR_CODE);
-            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-        }
+		if (authorizationResponse.statusError()) {
+			throw new OAuth2AuthenticationException(authorizationResponse.getError(),
+					authorizationResponse.getError().toString());
+		}
+
+		if (!authorizationResponse.getState().equals(authorizationRequest.getState())) {
+			OAuth2Error oauth2Error = new OAuth2Error(INVALID_STATE_PARAMETER_ERROR_CODE);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
 
         UriComponents requestUri = fixWellKnowPort(
                 UriComponentsBuilder.fromHttpUrl(authorizationResponse.getRedirectUri())).build();
         UriComponents redirectUri = fixWellKnowPort(
                 UriComponentsBuilder.fromHttpUrl(authorizationRequest.getRedirectUri())).build();
 
-        if (!requestUri.equals(redirectUri)) {
-            OAuth2Error oauth2Error = new OAuth2Error(INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE);
-            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-        }
+		if (!requestUri.equals(redirectUri)) {
+			OAuth2Error oauth2Error = new OAuth2Error(
+					INVALID_REDIRECT_URI_PARAMETER_ERROR_CODE);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
 
-        OAuth2ClientAuthenticationToken clientAuthentication =
-                this.authorizationCodeAuthenticator.authenticate(authorizationCodeAuthentication);
+		TokenResponse tokenResponse = this.authorizationCodeTokenExchanger
+				.exchange(authorizationCodeAuthentication);
 
-        this.accessTokenRepository.saveSecurityToken(
-                clientAuthentication.getAccessToken(),
-                clientAuthentication.getClientRegistration());
+		AccessToken accessToken = new AccessToken(tokenResponse.getTokenType(),
+				tokenResponse.getTokenValue(), tokenResponse.getIssuedAt(),
+				tokenResponse.getExpiresAt(), tokenResponse.getScopes());
 
-        return clientAuthentication;
-    }
+		OAuth2ClientAuthenticationToken clientAuthentication = new OAuth2ClientAuthenticationToken(
+				authorizationCodeAuthentication.getClientRegistration(), accessToken);
+		clientAuthentication.setDetails(authorizationCodeAuthentication.getDetails());
 
-    public final void setAccessTokenRepository(SecurityTokenRepository<AccessToken> accessTokenRepository) {
-        Assert.notNull(accessTokenRepository, "accessTokenRepository cannot be null");
-        this.accessTokenRepository = accessTokenRepository;
-    }
+		this.accessTokenRepository.saveSecurityToken(
+				clientAuthentication.getAccessToken(),
+				clientAuthentication.getClientRegistration());
 
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return AuthorizationCodeAuthenticationToken.class.isAssignableFrom(authentication);
-    }
+		return clientAuthentication;
+	}
 
-    private UriComponentsBuilder fixWellKnowPort(UriComponentsBuilder b) {
-        UriComponents c = b.build();
-        if (c.getPort() != -1) {
-            return b;
-        }
-        if (c.getScheme() == null) {
-            return b;
-        }
-        switch (c.getScheme()) {
-            case "http":
-                return b.port(80);
-            case "https":
-                return b.port(443);
-        }
-        return b;
-    }
+	public final void setAccessTokenRepository(
+			SecurityTokenRepository<AccessToken> accessTokenRepository) {
+		Assert.notNull(accessTokenRepository, "accessTokenRepository cannot be null");
+		this.accessTokenRepository = accessTokenRepository;
+	}
+
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return AuthorizationCodeAuthenticationToken.class
+				.isAssignableFrom(authentication);
+	}
+
+	private UriComponentsBuilder fixWellKnowPort(UriComponentsBuilder b) {
+		UriComponents c = b.build();
+		if (c.getPort() != -1) {
+			return b;
+		}
+		if (c.getScheme() == null) {
+			return b;
+		}
+		switch (c.getScheme()) {
+		case "http":
+			return b.port(80);
+		case "https":
+			return b.port(443);
+		}
+		return b;
+	}
 }
