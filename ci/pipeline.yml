@@ -14,11 +14,11 @@ resources:
   - name: cf
     type: cf
     source:
-      api: api.run.pez.pivotal.io
+      api: api.run.pivotal.io
       username: {{cf-username}}
       password: {{cf-password}}
-      organization: pivot-tmaki
-      space: jsug
+      organization: APJ
+      space: production
       skip_cert_check: true
   - name: slack-alert
     type: slack-notification
