@@ -1,5 +1,7 @@
 package jsug.portside.session;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -44,6 +46,8 @@ public class SessionController {
 		return this.sessionRepository.findAllWithCount() //
 				.collectList() //
 				.map(sessions -> {
+					Collections.sort(sessions, Comparator
+							.comparingInt(SessionWithCount::getCount).reversed());
 					model.addAttribute("sessions", sessions);
 					return "sessions/count";
 				});
